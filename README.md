@@ -368,5 +368,3 @@ to analyse market pricing trends and store competitiveness.
 * User roles and organization-based access
 * Automated testing & CI pipeline
 * Frontend dashboard consuming this API
-
-```
