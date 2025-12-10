@@ -1,57 +1,72 @@
 # Market Price Monitoring System
 
-This repository contains the backend for the Market Price Monitoring System built with Django and Django REST Framework.
+Market Price Monitoring System is a backend API built with **Django** and **Django REST Framework** designed for tracking, storing, and analysing product prices across multiple stores over time.
 
-## Getting started
+The project demonstrates a real-world backend architecture featuring:
 
-1. Create and activate a virtual environment:
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate
-   ```
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Provide PostgreSQL connection details via environment variables:
-   ```bash
-   export DB_NAME=market_price_db
-   export DB_USER=postgres
-   export DB_PASSWORD=postgres
-   export DB_HOST=localhost
-   export DB_PORT=5432
-   ```
-4. Apply migrations and start the development server:
-   ```bash
-   cd backend
-   python manage.py migrate
-   python manage.py runserver
-   ```
+- relational data modelling  
+- historical data tracking  
+- analytical endpoints  
+- role-based write permissions  
+- fully documented REST API (Swagger / ReDoc)  
+- Dockerized production-style deployment  
 
-API endpoints are exposed under `/api/v1/`.
+---
 
-## API documentation
+## Features
 
-Interactive API documentation is available once the development server is running:
+### Core domain
 
-- Raw OpenAPI schema: `http://localhost:8000/api/schema/`
-- Swagger UI: `http://localhost:8000/api/docs/`
-- ReDoc: `http://localhost:8000/api/redoc/`
+- **Stores**
+  - Represents online and physical shops
+  - Metadata: name, website, is_online flag
 
-All CRUD and analytics endpoints are included in the generated schema.
+- **Products**
+  - Central product catalog
+  - Fields: name, SKU (unique), category
 
-## Authentication
+- **Price Records**
+  - Historical pricing snapshots per product and store
+  - Fields: price, currency, captured_at timestamp
 
-- Write operations (POST, PUT, PATCH, DELETE) require authentication.
-- You can create an admin user with `python manage.py createsuperuser` and sign in via `/admin/` to use the browsable API with your session.
-- Anonymous users can perform read-only requests (GET), including the analytics endpoints.
+---
 
-## Analytics endpoints
+## CRUD API
 
-### Product statistics
-`GET /api/v1/products/{id}/statistics/?from=YYYY-MM-DD&to=YYYY-MM-DD`
+All entities expose full CRUD capabilities via Django REST Framework viewsets:
 
-Returns aggregate data for a product's price records (optionally filtered by capture date):
+- `Store`  
+- `Product`  
+- `PriceRecord`
+
+Base API prefix:
+
+```
+
+/api/v1/
+
+```
+
+Read operations are publicly accessible.  
+Write operations require authentication.
+
+---
+
+## Analytics Endpoints
+
+The system includes custom analytical endpoints for price insights:
+
+---
+
+### 📊 Product Statistics
+
+```
+
+GET /api/v1/products/{id}/statistics/?from=YYYY-MM-DD&to=YYYY-MM-DD
+
+````
+
+Returns aggregated price data for a given product, optionally filtered by date range:
 
 ```json
 {
@@ -62,12 +77,17 @@ Returns aggregate data for a product's price records (optionally filtered by cap
   "currency": "USD",
   "num_records": 14
 }
+````
+
+---
+
+### 📈 Product Price History
+
+```
+GET /api/v1/products/{id}/price-history/
 ```
 
-### Product price history
-`GET /api/v1/products/{id}/price-history/`
-
-Returns a chronological list of all captured prices for the product:
+Returns a chronological list of all price records for a product:
 
 ```json
 [
@@ -88,10 +108,15 @@ Returns a chronological list of all captured prices for the product:
 ]
 ```
 
-### Store comparison
-`GET /api/v1/products/{id}/store-comparison/`
+---
 
-Shows the latest captured price per store for the product and highlights the cheapest and most expensive stores:
+### 🏪 Store Comparison
+
+```
+GET /api/v1/products/{id}/store-comparison/
+```
+
+Displays the latest price per store for the selected product and highlights best and worst offers:
 
 ```json
 {
@@ -126,4 +151,223 @@ Shows the latest captured price per store for the product and highlights the che
     "captured_at": "2024-01-11T08:00:00Z"
   }
 }
+```
+
+---
+
+## Tech Stack
+
+* **Backend:** Python, Django
+* **API:** Django REST Framework
+* **Database:** PostgreSQL
+* **API Documentation:** drf-spectacular (Swagger / ReDoc / OpenAPI)
+* **Auth:** Session authentication & Basic authentication
+* **Permissions:** `IsAuthenticatedOrReadOnly`
+* **Containerization:** Docker & docker-compose
+
+---
+
+## API Documentation
+
+Once the server is running:
+
+* Swagger UI
+
+  ```
+  http://localhost:8000/api/docs/
+  ```
+
+* ReDoc
+
+  ```
+  http://localhost:8000/api/redoc/
+  ```
+
+* Raw OpenAPI schema
+
+  ```
+  http://localhost:8000/api/schema/
+  ```
+
+---
+
+## Authentication & Permissions
+
+* **Anonymous users**
+
+  * Can perform all **GET (read)** requests including analytics endpoints
+
+* **Authenticated users**
+
+  * Required for **write operations**:
+
+    * POST
+    * PUT
+    * PATCH
+    * DELETE
+
+You can create an admin account with:
+
+```bash
+python manage.py createsuperuser
+```
+
+and log in via:
+
+```
+http://localhost:8000/admin/
+```
+
+Authentication methods:
+
+* Session Authentication (via browser admin login)
+* Basic Authentication (via API clients such as Postman)
+
+---
+
+## Local Development Setup (without Docker)
+
+### 1. Clone the repository
+
+```bash
+git clone <repository-url>
+cd Market-Price-Monitoring-System
+```
+
+---
+
+### 2. Create and activate a virtual environment
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+---
+
+### 3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+### 4. Configure environment variables
+
+Create a `.env` file in the project root (use `.env.example` as template):
+
+```env
+DB_NAME=market_price_monitor
+DB_USER=postgres
+DB_PASSWORD=your_password_here
+DB_HOST=localhost
+DB_PORT=5432
+```
+
+---
+
+### 5. Apply migrations and create admin user
+
+```bash
+cd backend
+python manage.py migrate
+python manage.py createsuperuser
+```
+
+---
+
+### 6. Run development server
+
+```bash
+python manage.py runserver
+```
+
+Access the API at:
+
+```
+http://127.0.0.1:8000/api/v1/
+```
+
+---
+
+## Docker Setup
+
+This project includes a fully containerized development environment.
+
+### 1. Copy environment template
+
+```bash
+cp .env.example .env
+```
+
+Adjust database credentials if needed.
+
+---
+
+### 2. Start services
+
+```bash
+docker compose up --build
+```
+
+This will:
+
+* Start PostgreSQL (`db` container)
+* Build and start Django backend (`web` container)
+* Automatically apply all migrations
+
+---
+
+### 3. Access services
+
+* API root
+
+  ```
+  http://localhost:8000/api/v1/
+  ```
+
+* Swagger UI
+
+  ```
+  http://localhost:8000/api/docs/
+  ```
+
+* ReDoc
+
+  ```
+  http://localhost:8000/api/redoc/
+  ```
+
+Stop containers:
+
+```bash
+docker compose down
+```
+
+---
+
+## Example Workflow
+
+1. Create stores and products (via API or Django admin).
+2. Insert multiple `PriceRecord` entries for various stores.
+3. Call analytics endpoints:
+
+   * `/statistics/`
+   * `/price-history/`
+   * `/store-comparison/`
+
+to analyse market pricing trends and store competitiveness.
+
+---
+
+## Possible Future Extensions
+
+* External price import or scraping automation
+* Currency conversion support
+* User roles and organization-based access
+* Automated testing & CI pipeline
+* Frontend dashboard consuming this API
+
+```
 ```
