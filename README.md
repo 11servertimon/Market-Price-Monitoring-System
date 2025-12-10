@@ -370,4 +370,3 @@ to analyse market pricing trends and store competitiveness.
 * Frontend dashboard consuming this API
 
 ```
-```
