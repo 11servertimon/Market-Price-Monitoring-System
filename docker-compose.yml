@@ -15,6 +15,12 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
   web:
     build:
@@ -26,8 +32,10 @@ services:
     environment:
       # u Dockeru se Django kači na servis 'db', ne na localhost
       DB_HOST: db
+      DB_PORT: 5432
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "8000:8000"
     volumes:
